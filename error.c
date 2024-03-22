@@ -1,5 +1,10 @@
+// Řešení IJC-DU1, příklad a), 22.3.2024
+// Autor: Tomáš Lajda, FIT
+// Přeloženo: gcc 11.4.0
+
 #include "error.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdarg.h>
 
 void warning(const char *fmt, ...) {
