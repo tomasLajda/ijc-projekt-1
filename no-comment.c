@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "error.h"
 
@@ -8,8 +9,7 @@ typedef enum {
   SINGLE_LINE_COMMENT,
   MULTI_LINE_COMMENT,
   DOUBLE_QUOTE,
-  SINGLE_QUOTE,
-  BACKSLASH
+  SINGLE_QUOTE
 } State;
 
 // Functions for each state
@@ -32,24 +32,50 @@ State codeState(char currentChar, char previousChar) {
   return CODE;
 }
 
-State singleLineState(char currentChar, char previousChar) {
-  
+State singleLineState(char currentChar) {
+  if(currentChar == '\n') {
+    return CODE;
+  }
+
+  return SINGLE_LINE_COMMENT;
 }
 
 State multiLineState(char currentChar, char previousChar) {
+  if(previousChar == '*' && currentChar == '/') {
+    return CODE;
+  }
 
+  return MULTI_LINE_COMMENT;
 }
 
-State doubleQuoteState(char currentChar, char previousChar) {
+State doubleQuoteState(char currentChar, char previousChar, bool* doubleBackslash) {
+  if(currentChar == '"' && (previousChar != '\\' || (*doubleBackslash))) {
+    return CODE;
+  }
 
+  if(previousChar == '\\' && currentChar == '\\' && !(*doubleBackslash)) {
+    *doubleBackslash = true;
+  }
+  else {
+    *doubleBackslash = false;
+  }
+
+  return DOUBLE_QUOTE;
 }
 
-State singleQuoteState(char currentChar, char previousChar) {
+State singleQuoteState(char currentChar, char previousChar, bool* doubleBackslash) {
+  if(currentChar == '\'' && (previousChar != '\\' || (*doubleBackslash))) {
+    return CODE;
+  }
 
-}
+  if(previousChar == '\\' && currentChar == '\\' && !(*doubleBackslash)) {
+    *doubleBackslash = true;
+  }
+  else {
+    *doubleBackslash = false;
+  }
 
-State backslashState(char currentChar, char previousChar) {
-  
+  return SINGLE_QUOTE;
 }
 
 int main() {
@@ -57,6 +83,7 @@ int main() {
   State currentState = CODE;
   char currentChar = ' ';
   char previousChar = ' ';
+  bool doubleBackslash = false;
   
   while ((currentChar = fgetc(inputFile)) != EOF) {
     switch (currentState) {
@@ -64,19 +91,16 @@ int main() {
         currentState = codeState(currentChar, previousChar);
         break;
       case SINGLE_LINE_COMMENT:
-        currentState = singleLineState(currentChar, previousChar);
+        currentState = singleLineState(currentChar);
         break;
       case MULTI_LINE_COMMENT:
         currentState = multiLineState(currentChar, previousChar);
         break;
       case DOUBLE_QUOTE:
-        currentState = backslashState(currentChar, previousChar);
+        currentState = doubleQuoteState(currentChar, previousChar, &doubleBackslash);
         break;
       case SINGLE_QUOTE:
-        currentState = backslashState(currentChar, previousChar);
-        break;
-      case BACKSLASH:
-        currentState = backslashState(currentChar, previousChar);
+        currentState = singleQuoteState(currentChar, previousChar, &doubleBackslash);
         break;
       default:
         break;
