@@ -22,10 +22,12 @@ State codeState(char currentChar, char previousChar) {
       return MULTI_LINE_COMMENT;
     }
   }
-  else if(currentChar == '\"') {
+  
+  if(currentChar == '"') {
     return DOUBLE_QUOTE;
   }
-  else if(currentChar == '\"') {
+  
+  if(currentChar == '\'') {
     return SINGLE_QUOTE;
   }
 
@@ -78,8 +80,18 @@ State singleQuoteState(char currentChar, char previousChar, bool* doubleBackslas
   return SINGLE_QUOTE;
 }
 
-int main() {
+int main(int argc, char *argv[]) {
   FILE *inputFile;
+
+  if (argc > 1) {
+    inputFile = fopen(argv[1], "r");
+    if (inputFile == NULL) {
+      error_exit("file did not open");
+    }
+  } else {
+    inputFile = stdin;
+  }
+
   State currentState = CODE;
   char currentChar = ' ';
   char previousChar = ' ';
@@ -95,6 +107,9 @@ int main() {
         break;
       case MULTI_LINE_COMMENT:
         currentState = multiLineState(currentChar, previousChar);
+        if(currentState == CODE) {
+          continue;
+        }
         break;
       case DOUBLE_QUOTE:
         currentState = doubleQuoteState(currentChar, previousChar, &doubleBackslash);
@@ -103,10 +118,26 @@ int main() {
         currentState = singleQuoteState(currentChar, previousChar, &doubleBackslash);
         break;
       default:
+        error_exit("unexpected state");
         break;
+    }
+
+    if(currentState != SINGLE_LINE_COMMENT && currentState != MULTI_LINE_COMMENT ) {
+      if(currentState == CODE && previousChar == '/') {
+        fprintf(stdout, "%c", previousChar);
+      }
+      
+      if(!(currentState == CODE && currentChar == '/')) {
+        fprintf(stdout, "%c", currentChar);
+      } 
     }
 
     previousChar = currentChar;
   }
-    return 0;
+
+  if (argc > 1) {
+    fclose(inputFile);
+  }
+  
+  return 0;
 }

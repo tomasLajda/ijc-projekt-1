@@ -1,0 +1,24 @@
+#include <stdio.h>
+
+
+
+
+
+int main() {
+    
+    printf("Hello, world!\n");
+
+    
+    char *str = "This is a double-quote string.";
+    printf("%s\n", str);
+
+    
+    char c = 'A';
+    printf("%c\n", c);
+
+    
+
+    
+
+    return 0;
+}
