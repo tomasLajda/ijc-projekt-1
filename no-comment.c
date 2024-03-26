@@ -1,3 +1,7 @@
+// Řešení IJC-DU1, příklad b), 22.3.2024
+// Autor: Tomáš Lajda, FIT
+// Přeloženo: 11.4.0
+
 #include <stdio.h>
 #include <stdbool.h>
 
